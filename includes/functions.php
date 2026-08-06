@@ -7,6 +7,11 @@
  */
 require_once __DIR__ . '/../config/constants.php';
 
+// Start the session once so authentication data is available to helper functions and shared layout files.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 /**
  * Clean user input before using it in the project.
  *
@@ -90,4 +95,33 @@ function displayMessage($message, $type = 'success')
 
     // Display a simple HTML message box. CSS styling can be added later.
     echo '<div class="message message-' . $type . '">' . $message . '</div>';
+}
+
+/**
+ * Check whether a normal user is currently logged in.
+ *
+ * This function checks the session values created during user login.
+ *
+ * @return bool True when a valid user session exists, otherwise false.
+ */
+function isUserLoggedIn()
+{
+    // A user is logged in only when the user ID exists and the role is user.
+    return isset($_SESSION['user_id'], $_SESSION['user_role'])
+        && $_SESSION['user_role'] === 'user';
+}
+
+/**
+ * Require a normal user to be logged in before viewing a page.
+ *
+ * Future protected user pages can call this function at the top of the file.
+ *
+ * @return void
+ */
+function requireUserLogin()
+{
+    // Send guests to the login page and stop the current page.
+    if (!isUserLoggedIn()) {
+        redirect('user/login.php');
+    }
 }

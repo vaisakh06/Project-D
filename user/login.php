@@ -1,9 +1,4 @@
 <?php
-// Start the session before any HTML output so login data can be stored safely.
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 // Load project configuration, database connection, and helper functions.
 require_once '../config/constants.php';
 require_once '../config/database.php';
@@ -20,6 +15,8 @@ $successMessage = '';
 // Show a simple success message after successful registration.
 if (isset($_GET['registered']) && $_GET['registered'] === '1') {
     $successMessage = 'Registration successful. You can now log in.';
+} elseif (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
+    $successMessage = 'You have been logged out successfully.';
 }
 
 // Check if the login form was submitted using the POST method.
@@ -55,7 +52,7 @@ if (isPostRequest()) {
             mysqli_stmt_execute($statement);
 
 
-            
+            // Initialize variables that will receive the database result.
             $userId = null;
             $fullName = '';
             $userEmail = '';
