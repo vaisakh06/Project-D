@@ -9,6 +9,6 @@ $database = "initial_d";
 $connection = mysqli_connect($host, $username, $password, $database);
 
 // Stop the page and show an error message if the connection fails.
-if (!$connection) {
+if ($connection === false) {
     die("Database connection failed: " . mysqli_connect_error());
 }
