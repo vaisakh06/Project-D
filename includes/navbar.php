@@ -38,6 +38,9 @@ require_once __DIR__ . '/functions.php';
                     <?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?>
                 </li>
                 <li>
+                    <a href="<?= BASE_URL . 'user/dashboard.php' ?>">Dashboard</a>
+                </li>
+                <li>
                     <a href="<?= BASE_URL . 'user/logout.php' ?>">Logout</a>
                 </li>
             <?php } else { ?>
