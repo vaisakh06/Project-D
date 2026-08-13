@@ -34,7 +34,7 @@ require_once '../includes/navbar.php';
                 <div class="dashboard-card">
                     <h2>Manage Race Tracks</h2>
                     <p>Add and manage your race track listings when track management is implemented.</p>
-                    <a href="<?= BASE_URL . 'vendor/tracks.php' ?>">Manage Race Tracks</a>
+                    <a href="<?= BASE_URL . 'vendor/add_track.php' ?>">Manage Race Tracks</a>
                 </div>
 
                 <div class="dashboard-card dashboard-placeholder">
