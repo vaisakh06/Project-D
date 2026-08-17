@@ -17,7 +17,7 @@ $tracks = [];
 $errors = [];
 
 // Retrieve only the race tracks that belong to the logged-in vendor.
-$sql = "SELECT track_name, location, track_type, price_per_hour, opening_time, closing_time, contact_number, status
+$sql = "SELECT track_id, track_name, location, track_type, price_per_hour, opening_time, closing_time, contact_number, status
         FROM race_tracks
         WHERE vendor_id = ?
         ORDER BY created_at DESC";
@@ -31,6 +31,7 @@ if ($statement) {
     // Run the prepared SELECT query.
     if (mysqli_stmt_execute($statement)) {
         // Initialize variables that will receive each database row.
+        $trackId = null;
         $trackName = '';
         $location = '';
         $trackType = '';
@@ -43,6 +44,7 @@ if ($statement) {
         // Store the selected columns into PHP variables.
         mysqli_stmt_bind_result(
             $statement,
+            $trackId,
             $trackName,
             $location,
             $trackType,
@@ -56,6 +58,7 @@ if ($statement) {
         // Build a simple array of this vendor's race tracks.
         while (mysqli_stmt_fetch($statement)) {
             $tracks[] = [
+                'track_id' => $trackId,
                 'track_name' => $trackName,
                 'location' => $location,
                 'track_type' => $trackType,
@@ -152,6 +155,10 @@ require_once '../includes/navbar.php';
                             <p>
                                 <strong>Status:</strong>
                                 <?= htmlspecialchars($track['status'], ENT_QUOTES, 'UTF-8') ?>
+                            </p>
+
+                            <p>
+                                <a href="<?= BASE_URL . 'vendor/edit_track.php?track_id=' . htmlspecialchars((string) $track['track_id'], ENT_QUOTES, 'UTF-8') ?>">Edit</a>
                             </p>
                         </article>
                     <?php } ?>
