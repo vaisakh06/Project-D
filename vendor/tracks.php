@@ -15,6 +15,12 @@ if (!isset($_SESSION['vendor_id'], $_SESSION['vendor_role']) || $_SESSION['vendo
 $vendorId = $_SESSION['vendor_id'];
 $tracks = [];
 $errors = [];
+$successMessage = '';
+
+// Show a simple success message after a race track is deleted.
+if (isset($_GET['deleted']) && $_GET['deleted'] === '1') {
+    $successMessage = 'Race track deleted successfully.';
+}
 
 // Retrieve only the race tracks that belong to the logged-in vendor.
 $sql = "SELECT track_id, track_name, location, track_type, price_per_hour, opening_time, closing_time, contact_number, status
@@ -110,6 +116,13 @@ require_once '../includes/navbar.php';
                 </div>
             <?php } ?>
 
+            <?php if ($successMessage !== '') { ?>
+                <!-- Delete success message -->
+                <div class="success-message">
+                    <?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?>
+                </div>
+            <?php } ?>
+
             <?php if (empty($errors) && empty($tracks)) { ?>
                 <!-- Empty track listing message -->
                 <p>No race tracks have been added yet.</p>
@@ -159,6 +172,11 @@ require_once '../includes/navbar.php';
 
                             <p>
                                 <a href="<?= BASE_URL . 'vendor/edit_track.php?track_id=' . htmlspecialchars((string) $track['track_id'], ENT_QUOTES, 'UTF-8') ?>">Edit</a>
+                                |
+                                <a
+                                    href="<?= BASE_URL . 'vendor/delete_track.php?track_id=' . htmlspecialchars((string) $track['track_id'], ENT_QUOTES, 'UTF-8') ?>"
+                                    onclick="return confirm('Are you sure you want to delete this race track?');"
+                                >Delete</a>
                             </p>
                         </article>
                     <?php } ?>

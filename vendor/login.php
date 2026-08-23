@@ -15,6 +15,8 @@ $successMessage = '';
 // Show a simple success message after vendor registration.
 if (isset($_GET['registered']) && $_GET['registered'] === '1') {
     $successMessage = 'Vendor registration successful. Your account is now awaiting administrator approval.';
+} elseif (isset($_GET['logged_out']) && $_GET['logged_out'] === '1') {
+    $successMessage = 'You have been logged out successfully.';
 }
 
 // Check if the vendor login form was submitted using the POST method.
