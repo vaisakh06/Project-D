@@ -37,6 +37,12 @@ require_once '../includes/navbar.php';
                     <a href="<?= BASE_URL . 'vendor/tracks.php' ?>">Manage Race Tracks</a>
                 </div>
 
+                <div class="dashboard-card">
+                    <h2>Manage Availability</h2>
+                    <p>Update the opening and closing time for your race tracks.</p>
+                    <a href="<?= BASE_URL . 'vendor/availability.php' ?>">Manage Availability</a>
+                </div>
+
                 <div class="dashboard-card dashboard-placeholder">
                     <h2>Booking Requests</h2>
                     <p>Booking request management will be added after the booking module is created.</p>
