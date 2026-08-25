@@ -173,6 +173,8 @@ require_once '../includes/navbar.php';
                             <p>
                                 <a href="<?= BASE_URL . 'vendor/edit_track.php?track_id=' . htmlspecialchars((string) $track['track_id'], ENT_QUOTES, 'UTF-8') ?>">Edit</a>
                                 |
+                                <a href="<?= BASE_URL . 'vendor/track_images.php?track_id=' . htmlspecialchars((string) $track['track_id'], ENT_QUOTES, 'UTF-8') ?>">Manage Images</a>
+                                |
                                 <a
                                     href="<?= BASE_URL . 'vendor/delete_track.php?track_id=' . htmlspecialchars((string) $track['track_id'], ENT_QUOTES, 'UTF-8') ?>"
                                     onclick="return confirm('Are you sure you want to delete this race track?');"
