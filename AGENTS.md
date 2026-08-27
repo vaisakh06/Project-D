@@ -1,82 +1,49 @@
 # AGENTS.md
 
-This file gives instructions to any AI coding assistant working on INITIAL-D.
+## Working with INITIAL-D
 
-## Project Identity
+**Critical first step**: Always start by reading `config/constants.php:1-33` and `config/database.php:1-14` to understand the project's setup and access patterns.
 
-Project name: INITIAL-D
+**Project boundaries**: 
+- All application code lives in `admin/`, `user/`, and `vendor/` folders
+- Shared code in `includes/` and `config/`
+- Database schema in `database/initial_d.sql:1-113`
 
-Project type: MCA Mini Project
+**Database connection pattern**:
+- `config/database.php:9` establishes mysqli connection
+- `includes/functions.php:24-37` provides `sanitizeInput()` for cleaning form data
+- `includes/functions.php:48-58` provides `redirect()` using `BASE_URL` from constants
+- `includes/functions.php:68-72` provides `isPostRequest()` for form handling
+- Always use `mysqli_prepare()`, `mysqli_stmt_bind_param()`, and `mysqli_stmt_execute()` with prepared statements
 
-Purpose: Race track booking website for learning PHP procedural programming with MySQL.
+**Authentication flow**:
+- `includes/functions.php:107-127` provides `isUserLoggedIn()` and `requireUserLogin()`
+- Role detection via session variables: `$_SESSION['user_role']`
+- Login scripts in `user/login.php`, `vendor/login.php`, `admin/login.php`
 
-## Required Workflow
-
-Do not generate the whole project at once.
-
-Before implementing any feature:
-
-1. Explain what the feature does.
-2. Explain the implementation plan.
-3. List the files that will be created or edited.
-4. List the database tables that will be used.
-5. Wait for user confirmation.
-
-After implementing any feature:
-
-1. Explain why each file exists.
-2. Explain the important sections of the code.
-3. Explain any new PHP or MySQL concept used.
-4. Suggest one small practice modification for the student.
-5. Stop and wait for user confirmation.
-
-## Coding Standards
-
-- Use PHP procedural style.
-- Use MySQLi for database access.
-- Always use prepared statements for SQL queries.
-- Keep one PHP file focused on one clear responsibility.
-- Separate HTML, CSS, JavaScript, and PHP where practical.
-- Use beginner-friendly variable and function names.
-- Avoid frameworks unless the user explicitly changes the project requirements.
-- Avoid unnecessary abstractions.
-- Add comments only when they explain important logic.
-- Do not duplicate code when a reusable include or function is appropriate.
-
-## Safety Rules
-
-- Do not overwrite user work without checking existing files first.
-- Do not add application code unless the user has approved the feature plan.
-- Do not create database tables without explaining the schema first.
-- Do not add passwords, API keys, or secrets to the repository.
-
-## Approved Folder Structure
-
-Use this simple structure unless the user approves a change:
-
-```text
-INITIAL-D/
-├── index.php
-├── README.md
-├── AGENTS.md
-├── NOTES.md
-├── admin/
-├── user/
-├── vendor/
-├── config/
-├── includes/
-├── assets/
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── uploads/
-│   └── tracks/
-├── database/
-└── docs/
+**Common include pattern** (at top of every page):
+```php
+require_once '../config/constants.php';
+require_once '../config/database.php';
+require_once '../includes/functions.php';
 ```
 
-Do not create feature-specific PHP files until the user approves that feature plan.
+**Entry points**:
+- `index.php` - Main landing page
+- `user/login.php`, `user/register.php` - User authentication
+- `vendor/dashboard.php`, `vendor/add_track.php` - Vendor operations
+- `admin/dashboard.php` - Admin management
 
-## Current Project State
+**Files to avoid creating**:
+- Do not modify `.agents` - agent instructions
+- Do not edit `.gitkeep` files - they are empty placeholders
+- Do not add application code until the user approves a feature plan
 
-The project currently contains only a simple folder scaffold, root placeholder files, and learning documentation. Application code should be added feature by feature.
+**Development approach**:
+1. Explain the feature first
+2. Plan implementation with specific files
+3. List required database tables (reference `initial_d.sql:1-113`)
+4. Get user confirmation
+5. Implement one feature at a time
+6. Explain each file creation reason
+7. Suggest one practice improvement
