@@ -111,8 +111,8 @@ require_once '../includes/navbar.php';
             <div class="dashboard-actions">
                 <div class="dashboard-card">
                     <h2>Manage Vendors</h2>
-                    <p>View, approve, reject, or block vendor accounts.</p>
-                    <span>Coming Soon</span>
+                    <p>View, approve, block, or unblock vendor accounts.</p>
+                    <a href="<?= BASE_URL . 'admin/manage_vendors.php' ?>">Manage Vendors</a>
                 </div>
 
                 <div class="dashboard-card">
