@@ -118,7 +118,7 @@ require_once '../includes/navbar.php';
                 <div class="dashboard-card">
                     <h2>Manage Race Tracks</h2>
                     <p>Review, approve, reject, or manage race track listings.</p>
-                    <span>Coming Soon</span>
+                    <a href="<?= BASE_URL . 'admin/manage_race_tracks.php' ?>">Manage Race Tracks</a>
                 </div>
 
                 <div class="dashboard-card">
