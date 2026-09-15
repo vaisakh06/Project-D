@@ -23,7 +23,6 @@ require_once '../includes/navbar.php';
                 <h1>Welcome, <?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></h1>
                 <p>
                     You can manage your race track activity from this dashboard.
-                    More tools will be added as the user module grows.
                 </p>
             </div>
 
@@ -35,16 +34,16 @@ require_once '../includes/navbar.php';
                     <a href="<?= BASE_URL . 'tracks.php' ?>">Browse Tracks</a>
                 </div>
 
-                <div class="dashboard-card dashboard-placeholder">
+                <div class="dashboard-card">
                     <h2>My Bookings</h2>
-                    <p>Your booking history will appear here after the booking module is created.</p>
-                    <span>Coming Soon</span>
+                    <p>View your booking history and manage pending reservations.</p>
+                    <a href="<?= BASE_URL . 'user/bookings.php' ?>">Booking History</a>
                 </div>
 
-                <div class="dashboard-card dashboard-placeholder">
+                <div class="dashboard-card">
                     <h2>Profile</h2>
-                    <p>Profile management will be added in a later user module step.</p>
-                    <span>Coming Soon</span>
+                    <p>View and update your account information.</p>
+                    <a href="<?= BASE_URL . 'user/profile.php' ?>">My Profile</a>
                 </div>
 
                 <div class="dashboard-card">

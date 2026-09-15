@@ -123,14 +123,8 @@ require_once '../includes/navbar.php';
 
                 <div class="dashboard-card">
                     <h2>Manage Bookings</h2>
-                    <p>View and manage user bookings and track reservations.</p>
-                    <span>Coming Soon</span>
-                </div>
-
-                <div class="dashboard-card">
-                    <h2>Manage Users</h2>
-                    <p>View, block, or manage user accounts.</p>
-                    <span>Coming Soon</span>
+                    <p>View all user bookings and track reservations.</p>
+                    <a href="<?= BASE_URL . 'admin/manage_bookings.php' ?>">Manage Bookings</a>
                 </div>
 
                 <div class="dashboard-card">

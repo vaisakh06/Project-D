@@ -33,7 +33,7 @@ require_once __DIR__ . '/functions.php';
             </li>
 
             <!-- Authentication -->
-            <?php if (isUserLoggedIn()) { ?>
+            <?php if (isUserLoggedIn()): ?>
                 <li>
                     <?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?>
                 </li>
@@ -43,14 +43,34 @@ require_once __DIR__ . '/functions.php';
                 <li>
                     <a href="<?= BASE_URL . 'user/logout.php' ?>">Logout</a>
                 </li>
-            <?php } else { ?>
+            <?php elseif (isVendorLoggedIn()): ?>
+                <li>
+                    <?= htmlspecialchars($_SESSION['vendor_name'], ENT_QUOTES, 'UTF-8') ?>
+                </li>
+                <li>
+                    <a href="<?= BASE_URL . 'vendor/dashboard.php' ?>">Dashboard</a>
+                </li>
+                <li>
+                    <a href="<?= BASE_URL . 'vendor/logout.php' ?>">Logout</a>
+                </li>
+            <?php elseif (isAdminLoggedIn()): ?>
+                <li>
+                    <?= htmlspecialchars($_SESSION['admin_name'], ENT_QUOTES, 'UTF-8') ?>
+                </li>
+                <li>
+                    <a href="<?= BASE_URL . 'admin/dashboard.php' ?>">Dashboard</a>
+                </li>
+                <li>
+                    <a href="<?= BASE_URL . 'admin/logout.php' ?>">Logout</a>
+                </li>
+            <?php else: ?>
                 <li>
                     <a href="<?= BASE_URL . 'user/login.php' ?>">Login</a>
                 </li>
                 <li>
                     <a href="<?= BASE_URL . 'user/register.php' ?>">Register</a>
                 </li>
-            <?php } ?>
+            <?php endif; ?>
         </ul>
     </div>
 </nav>

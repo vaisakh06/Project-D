@@ -125,3 +125,31 @@ function requireUserLogin()
         redirect('user/login.php');
     }
 }
+
+/**
+ * Check whether a vendor is currently logged in.
+ *
+ * This function checks the session values created during vendor login.
+ *
+ * @return bool True when a valid vendor session exists, otherwise false.
+ */
+function isVendorLoggedIn()
+{
+    // A vendor is logged in only when the vendor ID exists and the role is vendor.
+    return isset($_SESSION['vendor_id'], $_SESSION['vendor_role'])
+        && $_SESSION['vendor_role'] === 'vendor';
+}
+
+/**
+ * Check whether an admin is currently logged in.
+ *
+ * This function checks the session values created during admin login.
+ *
+ * @return bool True when a valid admin session exists, otherwise false.
+ */
+function isAdminLoggedIn()
+{
+    // An admin is logged in only when the admin ID exists and the role is admin.
+    return isset($_SESSION['admin_id'], $_SESSION['admin_role'])
+        && $_SESSION['admin_role'] === 'admin';
+}

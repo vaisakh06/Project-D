@@ -25,12 +25,6 @@ require_once 'includes/navbar.php';
             <a href="<?= BASE_URL . 'tracks.php' ?>">Explore Tracks</a>
         </section>
 
-        <!-- Featured Tracks Section -->
-        <section class="featured-tracks">
-            <h2>Featured Tracks</h2>
-            <p>Featured race tracks will appear here.</p>
-        </section>
-
         <!-- About INITIAL-D Section -->
         <section class="about">
             <h2>About INITIAL-D</h2>
