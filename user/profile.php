@@ -18,15 +18,16 @@ $profileSuccess = '';
 $fullName = '';
 $email = '';
 $phone = '';
+$profileImage = '';
 
 // Load current user data from the database.
-$loadSql = "SELECT full_name, email, phone, status, created_at FROM users WHERE user_id = ? LIMIT 1";
+$loadSql = "SELECT full_name, email, phone, profile_image, status, created_at FROM users WHERE user_id = ? LIMIT 1";
 $loadStmt = mysqli_prepare($connection, $loadSql);
 
 if ($loadStmt) {
     mysqli_stmt_bind_param($loadStmt, "i", $userId);
     mysqli_stmt_execute($loadStmt);
-    mysqli_stmt_bind_result($loadStmt, $fullName, $email, $phone, $userStatus, $createdAt);
+    mysqli_stmt_bind_result($loadStmt, $fullName, $email, $phone, $profileImage, $userStatus, $createdAt);
     mysqli_stmt_fetch($loadStmt);
     mysqli_stmt_close($loadStmt);
 } else {
@@ -80,18 +81,49 @@ if (isPostRequest() && isset($_POST['update_profile'])) {
         $profileError = 'Phone number must be between 10 and 15 digits.';
     }
 
+    // Handle the optional profile image upload.
+    $newProfileImage = $profileImage;
+    $uploadedImagePath = '';
+
+    if ($profileError === '' && isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $validationResult = validateProfileImageUpload($_FILES['profile_image']);
+
+        if (isset($validationResult['error'])) {
+            $profileError = $validationResult['error'];
+        } else {
+            $uploadDirectory = __DIR__ . '/../' . USER_IMAGE_FOLDER;
+            $storeResult = storeProfileImage($_FILES['profile_image']['tmp_name'], $validationResult['extension'], 'user', $userId, $uploadDirectory, USER_IMAGE_FOLDER);
+
+            if (isset($storeResult['error'])) {
+                $profileError = $storeResult['error'];
+            } else {
+                $newProfileImage = $storeResult['path'];
+                $uploadedImagePath = $storeResult['path'];
+            }
+        }
+    }
+
     // Update only after all validation passes.
     if ($profileError === '') {
-        $updateSql = "UPDATE users SET full_name = ?, email = ?, phone = ? WHERE user_id = ?";
+        $updateSql = "UPDATE users SET full_name = ?, email = ?, phone = ?, profile_image = ? WHERE user_id = ?";
         $updateStmt = mysqli_prepare($connection, $updateSql);
 
         if ($updateStmt) {
-            mysqli_stmt_bind_param($updateStmt, "sssi", $newFullName, $newEmail, $newPhone, $userId);
+            mysqli_stmt_bind_param($updateStmt, "ssssi", $newFullName, $newEmail, $newPhone, $newProfileImage, $userId);
             $updateSuccessful = mysqli_stmt_execute($updateStmt);
             $affectedRows = mysqli_stmt_affected_rows($updateStmt);
             mysqli_stmt_close($updateStmt);
 
             if ($updateSuccessful && $affectedRows > 0) {
+                // Remove the old profile image only after the new one is saved.
+                if ($uploadedImagePath !== '' && $profileImage !== '' && $profileImage !== $newProfileImage) {
+                    $oldFilePath = __DIR__ . '/../' . $profileImage;
+
+                    if (is_file($oldFilePath)) {
+                        unlink($oldFilePath);
+                    }
+                }
+
                 // Update session variables with new values.
                 $_SESSION['user_name'] = $newFullName;
                 $_SESSION['user_email'] = $newEmail;
@@ -99,9 +131,27 @@ if (isPostRequest() && isset($_POST['update_profile'])) {
                 redirect('user/profile.php?updated=1');
                 exit;
             } else {
+                // Remove the newly uploaded file when the database update fails.
+                if ($uploadedImagePath !== '') {
+                    $newFilePath = __DIR__ . '/../' . $uploadedImagePath;
+
+                    if (is_file($newFilePath)) {
+                        unlink($newFilePath);
+                    }
+                }
+
                 $profileError = 'No changes were made or unable to update.';
             }
         } else {
+            // Remove the newly uploaded file when the database statement cannot be prepared.
+            if ($uploadedImagePath !== '') {
+                $newFilePath = __DIR__ . '/../' . $uploadedImagePath;
+
+                if (is_file($newFilePath)) {
+                    unlink($newFilePath);
+                }
+            }
+
             $profileError = 'Something went wrong. Please try again later.';
         }
     }
@@ -152,8 +202,33 @@ require_once '../includes/navbar.php';
 
             <?php if ($profileError !== 'Something went wrong. Please try again later.'): ?>
                 <!-- Profile form -->
-                <form method="POST" action="profile.php" class="booking-form">
+                <form method="POST" action="profile.php" class="booking-form" enctype="multipart/form-data">
                     <input type="hidden" name="update_profile" value="1">
+
+                    <!-- Current Profile Image -->
+                    <div class="form-group">
+                        <label>Profile Image</label>
+                        <?php if (!empty($profileImage)) { ?>
+                            <img
+                                src="<?= BASE_URL . htmlspecialchars($profileImage, ENT_QUOTES, 'UTF-8') ?>"
+                                alt="Profile image"
+                                class="profile-image"
+                            >
+                        <?php } else { ?>
+                            <p class="readonly-field">No profile image uploaded yet.</p>
+                        <?php } ?>
+                    </div>
+
+                    <!-- Upload Profile Image -->
+                    <div class="form-group">
+                        <label for="profile_image">Upload Profile Image (JPG, PNG, or WEBP, max 2 MB)</label>
+                        <input
+                            type="file"
+                            id="profile_image"
+                            name="profile_image"
+                            accept=".jpg,.jpeg,.png,.webp"
+                        >
+                    </div>
 
                     <!-- Read-only: User ID -->
                     <div class="form-group">

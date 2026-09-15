@@ -1016,6 +1016,15 @@ main > .container > section {
 .mb-1 { margin-bottom: 8px; }
 .mb-2 { margin-bottom: 16px; }
 
+/* -------- Profile Image -------- */
+.profile-image {
+    display: block;
+    max-width: 160px;
+    height: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
 /* -------- Payment Form -------- */
 .payment-method-options {
     display: flex;

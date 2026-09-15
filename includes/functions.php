@@ -153,3 +153,108 @@ function isAdminLoggedIn()
     return isset($_SESSION['admin_id'], $_SESSION['admin_role'])
         && $_SESSION['admin_role'] === 'admin';
 }
+
+/**
+ * Require a vendor to be logged in before viewing a page.
+ *
+ * @return void
+ */
+function requireVendorLogin()
+{
+    // Send guests to the common login page with the vendor role preselected.
+    if (!isVendorLoggedIn()) {
+        redirect('login.php?role=vendor');
+    }
+}
+
+/**
+ * Require an admin to be logged in before viewing a page.
+ *
+ * @return void
+ */
+function requireAdminLogin()
+{
+    // Send guests to the common login page with the admin role preselected.
+    if (!isAdminLoggedIn()) {
+        redirect('login.php?role=admin');
+    }
+}
+
+/**
+ * Validate an uploaded profile image without storing it.
+ *
+ * Mirrors the validation rules used for race track images: JPG, PNG, and
+ * WEBP files up to 2 MB, checked by both extension and MIME type.
+ *
+ * @param array $file One entry from the $_FILES array.
+ * @return array An array with an 'extension' key on success or an 'error' key on failure.
+ */
+function validateProfileImageUpload($file)
+{
+    $maxFileSize = 2 * 1024 * 1024;
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    // Validate that a file was uploaded without errors.
+    if (!is_array($file) || !isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+        return ['error' => 'Image upload failed. Please try again.'];
+    }
+
+    if (!isset($file['size']) || $file['size'] > $maxFileSize) {
+        return ['error' => 'Image size must not be more than 2 MB.'];
+    }
+
+    $originalFileName = $file['name'] ?? '';
+    $temporaryFilePath = $file['tmp_name'] ?? '';
+    $fileExtension = strtolower(pathinfo($originalFileName, PATHINFO_EXTENSION));
+
+    // Validate the file extension.
+    if (!in_array($fileExtension, $allowedExtensions, true)) {
+        return ['error' => 'Only JPG, PNG, and WEBP images are allowed.'];
+    }
+
+    // Validate the MIME type using PHP's file information functions.
+    $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
+
+    if ($fileInfo === false) {
+        return ['error' => 'Unable to validate the uploaded image. Please try again.'];
+    }
+
+    $mimeType = finfo_file($fileInfo, $temporaryFilePath);
+    finfo_close($fileInfo);
+
+    if (!in_array($mimeType, $allowedMimeTypes, true)) {
+        return ['error' => 'Only JPG, PNG, and WEBP images are allowed.'];
+    }
+
+    return ['extension' => $fileExtension];
+}
+
+/**
+ * Store a validated profile image with a unique filename.
+ *
+ * @param string $temporaryFilePath The temporary uploaded file path.
+ * @param string $fileExtension The validated file extension.
+ * @param string $prefix Filename prefix, for example 'user' or 'vendor'.
+ * @param int $ownerId The user or vendor ID that owns the image.
+ * @param string $uploadDirectory The absolute destination directory.
+ * @param string $pathPrefix The relative folder prefix stored in the database.
+ * @return array An array with a 'path' key on success or an 'error' key on failure.
+ */
+function storeProfileImage($temporaryFilePath, $fileExtension, $prefix, $ownerId, $uploadDirectory, $pathPrefix)
+{
+    if (!is_dir($uploadDirectory)) {
+        return ['error' => 'Profile image upload folder is not available.'];
+    }
+
+    // Build a unique filename so uploads never overwrite each other.
+    $safeFileName = $prefix . '_' . (int) $ownerId . '_' . str_replace('.', '_', uniqid('', true)) . '.' . $fileExtension;
+    $storedImagePath = $pathPrefix . $safeFileName;
+    $destinationPath = $uploadDirectory . $safeFileName;
+
+    if (!move_uploaded_file($temporaryFilePath, $destinationPath)) {
+        return ['error' => 'Unable to upload the profile image. Please try again.'];
+    }
+
+    return ['path' => $storedImagePath];
+}

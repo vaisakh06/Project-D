@@ -12,6 +12,11 @@ requireUserLogin();
 // Always use the authenticated user ID from the session.
 $userId = $_SESSION['user_id'];
 
+// Initialize CSRF token for cancellation form.
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Initialize message variables.
 $statusMessage = '';
 $successMessage = '';
@@ -19,37 +24,91 @@ $successMessage = '';
 // Handle POST requests for booking cancellation.
 if (isPostRequest()) {
     $bookingIdInput = $_POST['booking_id'] ?? '';
-    $action = $_POST['action'] ?? '';
+    $csrfToken = $_POST['csrf_token'] ?? '';
 
-    // Validate booking_id as integer.
-    if (!ctype_digit((string) $bookingIdInput) || (int) $bookingIdInput <= 0) {
+    // Validate CSRF token.
+    if (!isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], (string) $csrfToken)) {
+        $statusMessage = 'Invalid request. Please try again.';
+    } elseif (!ctype_digit((string) $bookingIdInput) || (int) $bookingIdInput <= 0) {
+        // Validate booking_id as integer.
         $statusMessage = 'Invalid booking ID.';
     } else {
         $bookingId = (int) $bookingIdInput;
 
-        // Validate action against explicit allowlist.
-        if ($action !== 'cancel') {
-            $statusMessage = 'Invalid action.';
+        // Start a transaction so the ownership/status check and cancellation succeed or fail together.
+        if (!mysqli_begin_transaction($connection)) {
+            $statusMessage = 'Something went wrong. Please try again later.';
         } else {
-            // Conditional UPDATE that verifies ownership and current status.
-            $updateSql = "UPDATE bookings SET status = 'Cancelled'
-                          WHERE booking_id = ? AND user_id = ? AND status = 'Pending'";
-            $updateStatement = mysqli_prepare($connection, $updateSql);
+            // Lock the booking row so a repeated request cannot cancel or restore the slot twice.
+            $lockSql = "SELECT status FROM bookings WHERE booking_id = ? AND user_id = ? FOR UPDATE";
+            $lockStmt = mysqli_prepare($connection, $lockSql);
 
-            if ($updateStatement) {
-                mysqli_stmt_bind_param($updateStatement, "ii", $bookingId, $userId);
-                $updateSuccessful = mysqli_stmt_execute($updateStatement);
-                $affectedRows = mysqli_stmt_affected_rows($updateStatement);
-                mysqli_stmt_close($updateStatement);
-
-                if ($updateSuccessful && $affectedRows > 0) {
-                    redirect('user/bookings.php?cancelled=1');
-                    exit;
-                } else {
-                    $statusMessage = 'Unable to cancel booking. Only pending bookings can be cancelled.';
-                }
-            } else {
+            if (!$lockStmt) {
+                mysqli_rollback($connection);
                 $statusMessage = 'Something went wrong. Please try again later.';
+            } else {
+                mysqli_stmt_bind_param($lockStmt, "ii", $bookingId, $userId);
+
+                if (!mysqli_stmt_execute($lockStmt)) {
+                    mysqli_stmt_close($lockStmt);
+                    mysqli_rollback($connection);
+                    $statusMessage = 'Something went wrong. Please try again later.';
+                } else {
+                    mysqli_stmt_store_result($lockStmt);
+
+                    if (mysqli_stmt_num_rows($lockStmt) === 0) {
+                        mysqli_stmt_close($lockStmt);
+                        mysqli_rollback($connection);
+                        $statusMessage = 'Booking not found.';
+                    } else {
+                        // Recheck the current status after locking to prevent duplicate cancellation.
+                        $currentStatus = '';
+                        mysqli_stmt_bind_result($lockStmt, $currentStatus);
+
+                        if (!mysqli_stmt_fetch($lockStmt)) {
+                            mysqli_stmt_close($lockStmt);
+                            mysqli_rollback($connection);
+                            $statusMessage = 'Something went wrong. Please try again later.';
+                        } elseif ($currentStatus !== 'Pending' && $currentStatus !== 'Accepted') {
+                            mysqli_stmt_close($lockStmt);
+                            mysqli_rollback($connection);
+                            $statusMessage = 'Only Pending and Accepted bookings can be cancelled.';
+                        } else {
+                            // Update the booking status to Cancelled. Track availability queries
+                            // only count Pending and Accepted bookings, so this automatically
+                            // makes the exact date/time slot available again.
+                            $updateSql = "UPDATE bookings SET status = 'Cancelled' WHERE booking_id = ? AND status = ?";
+                            $updateStmt = mysqli_prepare($connection, $updateSql);
+
+                            if (!$updateStmt) {
+                                mysqli_stmt_close($lockStmt);
+                                mysqli_rollback($connection);
+                                $statusMessage = 'Something went wrong. Please try again later.';
+                            } else {
+                                mysqli_stmt_bind_param($updateStmt, "is", $bookingId, $currentStatus);
+
+                                $updateSuccessful = mysqli_stmt_execute($updateStmt);
+                                $affectedRows = mysqli_stmt_affected_rows($updateStmt);
+                                mysqli_stmt_close($updateStmt);
+
+                                if ($updateSuccessful && $affectedRows === 1) {
+                                    mysqli_stmt_close($lockStmt);
+
+                                    if (mysqli_commit($connection)) {
+                                        redirect('user/bookings.php?cancelled=1');
+                                    }
+
+                                    mysqli_rollback($connection);
+                                    $statusMessage = 'Something went wrong. Please try again later.';
+                                } else {
+                                    mysqli_stmt_close($lockStmt);
+                                    mysqli_rollback($connection);
+                                    $statusMessage = 'Unable to cancel booking. Please try again later.';
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -142,10 +201,11 @@ require_once '../includes/navbar.php';
                                     </td>
                                     <td><?= htmlspecialchars($booking['created_at'], ENT_QUOTES, 'UTF-8') ?></td>
                                     <td class="actions">
-                                        <?php if ($booking['status'] === 'Pending'): ?>
+                                        <?php if ($booking['status'] === 'Pending' || $booking['status'] === 'Accepted'): ?>
                                             <form method="POST" class="action-form">
-                                                <input type="hidden" name="booking_id" value="<?= $booking['booking_id'] ?>">
-                                                <button type="submit" name="action" value="cancel" class="btn-small btn-cancel">
+                                                <input type="hidden" name="booking_id" value="<?= (int) $booking['booking_id'] ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+                                                <button type="submit" class="btn-small btn-cancel">
                                                     Cancel
                                                 </button>
                                             </form>

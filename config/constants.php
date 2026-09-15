@@ -29,5 +29,11 @@ define('UPLOAD_FOLDER', 'uploads/');
 // The folder where race track images uploaded by vendors will be stored.
 define('TRACK_IMAGE_FOLDER', 'uploads/tracks/');
 
+// The folder where user profile images will be stored.
+define('USER_IMAGE_FOLDER', 'uploads/users/');
+
+// The folder where vendor profile/logo images will be stored.
+define('VENDOR_IMAGE_FOLDER', 'uploads/vendors/');
+
 // Apply the project timezone immediately so all date and time functions use it.
 date_default_timezone_set(TIMEZONE);

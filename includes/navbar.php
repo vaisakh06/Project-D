@@ -65,10 +65,10 @@ require_once __DIR__ . '/functions.php';
                 </li>
             <?php else: ?>
                 <li>
-                    <a href="<?= BASE_URL . 'user/login.php' ?>">Login</a>
+                    <a href="<?= BASE_URL . 'login.php' ?>">Login</a>
                 </li>
                 <li>
-                    <a href="<?= BASE_URL . 'user/register.php' ?>">Register</a>
+                    <a href="<?= BASE_URL . 'register.php' ?>">Register</a>
                 </li>
             <?php endif; ?>
         </ul>
