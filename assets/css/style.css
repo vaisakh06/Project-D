@@ -439,6 +439,24 @@ a.btn-primary:hover {
     border: 1px solid rgba(41, 128, 185, 0.3);
 }
 
+.status-unread {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: var(--color-pending);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.status-read {
+    background-color: rgba(41, 128, 185, 0.15);
+    color: var(--color-info);
+    border: 1px solid rgba(41, 128, 185, 0.3);
+}
+
+.status-replied {
+    background-color: rgba(39, 174, 96, 0.15);
+    color: var(--color-approved);
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
 /* -------- Tables -------- */
 .table-container {
     overflow-x: auto;

@@ -29,10 +29,7 @@ function sanitizeInput($data)
     // Remove backslashes from the input.
     $data = stripslashes($data);
 
-    // Convert special HTML characters to prevent unwanted HTML output.
-    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
-
-    // Return the cleaned input.
+    // Return the cleaned input. Encoding is applied at output time via htmlspecialchars().
     return $data;
 }
 
@@ -257,4 +254,171 @@ function storeProfileImage($temporaryFilePath, $fileExtension, $prefix, $ownerId
     }
 
     return ['path' => $storedImagePath];
+}
+
+/**
+ * Insert a new contact message into the database.
+ *
+ * @param mysqli $connection The database connection.
+ * @param string $name The sender's name.
+ * @param string $email The sender's email.
+ * @param string $subject The message subject.
+ * @param string $message The message body.
+ * @return array An array with 'success' key on success or 'error' key on failure.
+ */
+function insertContactMessage($connection, $name, $email, $subject, $message)
+{
+    $sql = "INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)";
+    $stmt = mysqli_prepare($connection, $sql);
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "ssss", $name, $email, $subject, $message);
+        $inserted = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+
+        if ($inserted) {
+            return ['success' => true];
+        }
+        return ['error' => 'Unable to save your message. Please try again later.'];
+    }
+    return ['error' => 'Something went wrong. Please try again later.'];
+}
+
+/**
+ * Fetch all contact messages, ordered by most recent first.
+ *
+ * @param mysqli $connection The database connection.
+ * @return mixed The result set or false on failure.
+ */
+function getContactMessages($connection)
+{
+    $sql = "SELECT message_id, name, email, subject, message, status, created_at, updated_at
+            FROM contact_messages
+            ORDER BY created_at DESC";
+    return mysqli_query($connection, $sql);
+}
+
+/**
+ * Update the status of a contact message.
+ *
+ * @param mysqli $connection The database connection.
+ * @param int $messageId The message ID.
+ * @param string $newStatus The new status value.
+ * @return array An array with 'success' or 'error' key.
+ */
+function updateContactMessageStatus($connection, $messageId, $newStatus)
+{
+    $sql = "UPDATE contact_messages SET status = ? WHERE message_id = ?";
+    $stmt = mysqli_prepare($connection, $sql);
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "si", $newStatus, $messageId);
+        $updated = mysqli_stmt_execute($stmt);
+        $affectedRows = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+
+        if ($updated) {
+            return ['success' => true];
+        }
+        return ['error' => 'Unable to update message status.'];
+    }
+    return ['error' => 'Something went wrong. Please try again later.'];
+}
+
+/**
+ * Delete a contact message from the database.
+ *
+ * @param mysqli $connection The database connection.
+ * @param int $messageId The message ID.
+ * @return array An array with 'success' or 'error' key.
+ */
+function deleteContactMessage($connection, $messageId)
+{
+    $sql = "DELETE FROM contact_messages WHERE message_id = ?";
+    $stmt = mysqli_prepare($connection, $sql);
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "i", $messageId);
+        $deleted = mysqli_stmt_execute($stmt);
+        $affectedRows = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+
+        if ($deleted && $affectedRows > 0) {
+            return ['success' => true];
+        }
+        return ['error' => 'Unable to delete the message.'];
+    }
+    return ['error' => 'Something went wrong. Please try again later.'];
+}
+
+/**
+ * Count unread contact messages.
+ *
+ * @param mysqli $connection The database connection.
+ * @return int The number of unread messages.
+ */
+function getUnreadContactMessageCount($connection)
+{
+    $sql = "SELECT COUNT(*) FROM contact_messages WHERE status = 'Unread'";
+    $result = mysqli_query($connection, $sql);
+    if ($result) {
+        return (int) mysqli_fetch_row($result)[0];
+    }
+    return 0;
+}
+
+/**
+ * Save an admin reply to a contact message and mark it as Replied.
+ *
+ * @param mysqli $connection The database connection.
+ * @param int $messageId The message ID.
+ * @param string $reply The admin reply text.
+ * @return array An array with 'success' or 'error' key.
+ */
+function saveContactReply($connection, $messageId, $reply)
+{
+    $sql = "UPDATE contact_messages SET admin_reply = ?, replied_at = NOW(), status = 'Replied' WHERE message_id = ?";
+    $stmt = mysqli_prepare($connection, $sql);
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "si", $reply, $messageId);
+        $updated = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+
+        if ($updated) {
+            return ['success' => true];
+        }
+        return ['error' => 'Unable to save the reply. Please try again.'];
+    }
+    return ['error' => 'Something went wrong. Please try again later.'];
+}
+
+/**
+ * Fetch a single contact message by ID.
+ *
+ * @param mysqli $connection The database connection.
+ * @param int $messageId The message ID.
+ * @return array|false The message array or false if not found.
+ */
+function getContactMessageById($connection, $messageId)
+{
+    $sql = "SELECT message_id, name, email, subject, message, admin_reply, replied_at, status, created_at, updated_at
+            FROM contact_messages
+            WHERE message_id = ?
+            LIMIT 1";
+    $stmt = mysqli_prepare($connection, $sql);
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "i", $messageId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            $message = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+            return $message;
+        }
+        mysqli_stmt_close($stmt);
+    }
+    return false;
 }

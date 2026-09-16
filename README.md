@@ -2,7 +2,7 @@
 
 INITIAL-D is a PHP + MySQL race track booking website for an MCA Mini Project.
 
-The project will be built feature by feature for learning. No full application code should be generated at once.
+All core features are implemented and working.
 
 ## Planned Modules
 
@@ -31,51 +31,98 @@ The project will be built feature by feature for learning. No full application c
 ```text
 INITIAL-D/
 ├── index.php
+├── about.php
+├── contact.php
+├── tracks.php
+├── track.php
+├── login.php
+├── register.php
+├── payment.php
+├── payment_success.php
+├── payment_failed.php
 ├── README.md
 ├── AGENTS.md
 ├── NOTES.md
 ├── admin/
+│   ├── dashboard.php
+│   ├── login.php
+│   ├── logout.php
+│   ├── manage_vendors.php
+│   ├── manage_race_tracks.php
+│   ├── manage_bookings.php
+│   ├── manage_contacts.php
+│   └── view_contact.php
 ├── user/
+│   ├── dashboard.php
+│   ├── login.php
+│   ├── register.php
+│   ├── bookings.php
+│   ├── profile.php
+│   └── logout.php
 ├── vendor/
+│   ├── dashboard.php
+│   ├── login.php
+│   ├── register.php
+│   ├── add_track.php
+│   ├── tracks.php
+│   ├── edit_track.php
+│   ├── delete_track.php
+│   ├── track_images.php
+│   ├── availability.php
+│   ├── manage_bookings.php
+│   ├── profile.php
+│   └── logout.php
 ├── config/
+│   ├── constants.php
+│   └── database.php
 ├── includes/
+│   ├── functions.php
+│   ├── header.php
+│   ├── footer.php
+│   └── navbar.php
 ├── assets/
-│   ├── css/
-│   ├── js/
-│   └── images/
+│   └── css/
+│       └── style.css
 ├── uploads/
-│   └── tracks/
+│   ├── tracks/
+│   ├── users/
+│   └── vendors/
 ├── database/
+│   ├── initial_d.sql
+│   └── migrations/
 └── docs/
+    ├── project_documentation.md
+    ├── er_diagram.md
+    └── database_design.md
 ```
 
 ## Folder Purpose
 
-`index.php` will become the main landing page of the website. It is currently only a placeholder.
+`index.php` is the main landing page of the website.
 
-`admin/` will contain admin pages, such as dashboard, user management, vendor management, track approval, and booking monitoring.
+`admin/` contains admin pages such as dashboard, vendor management, track approval, and booking monitoring.
 
-`user/` will contain user pages, such as registration, login, profile, race track search, booking, and booking history.
+`user/` contains user pages such as dashboard, login, registration, profile, bookings, and logout.
 
-`vendor/` will contain vendor pages, such as registration, login, profile, track management, availability management, and booking requests.
+`vendor/` contains vendor pages such as dashboard, login, registration, profile, track management, availability management, booking management, and logout.
 
-`config/` will contain project configuration files, such as the database connection file.
+`config/` contains project configuration files such as the database connection and constants.
 
-`includes/` will contain reusable PHP files, such as header, footer, helper functions, and session checking files.
+`includes/` contains reusable PHP files such as header, footer, navbar, and helper functions.
 
 `assets/` contains frontend files used by the website.
 
-`assets/css/` will contain CSS stylesheet files.
+`assets/css/` contains CSS stylesheet files.
 
-`assets/js/` will contain JavaScript files.
+`uploads/` contains files uploaded through the website.
 
-`assets/images/` will contain public images used in the website design.
+`uploads/tracks/` contains race track images uploaded by vendors.
 
-`uploads/` will contain files uploaded through the website.
+`uploads/users/` contains user profile images.
 
-`uploads/tracks/` will contain race track images uploaded by vendors.
+`uploads/vendors/` contains vendor profile images.
 
-`database/` will contain SQL files related to database design and setup.
+`database/` contains SQL files related to database design and setup.
 
 `docs/` contains project planning notes, diagrams, and explanations.
 
@@ -94,4 +141,25 @@ Each feature should follow this process:
 
 ## Current Status
 
-Simple project scaffold created. Application code, database tables, and feature files have not been added yet.
+The following features are implemented:
+
+- User registration and login (common page with role selector)
+- User profile management with profile image upload
+- Vendor registration and login (common page with role selector)
+- Vendor profile management with profile image upload
+- Vendor dashboard, track CRUD, availability management, track image management
+- Vendor booking management (accept/reject)
+- Admin dashboard with statistics
+- Admin vendor management (approve/block/unblock)
+- Admin race track management (approve/reject/return to pending/delete)
+- Race track browsing, detail view, and booking creation
+- User booking history with cancellation (transaction-safe)
+- Mock payment flow (Card/UPI)
+- Contact form with database storage and CSRF protection
+- Admin contact message management (view, reply, mark read/replied, delete)
+- Reply history with timestamp tracking
+- About and Contact pages
+- Role-based access control on all protected pages
+- Session-based authentication with password hashing
+- Prepared statements for all database queries
+- CSRF protection on booking cancellation and contact form

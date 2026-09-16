@@ -106,6 +106,10 @@ require_once 'includes/navbar.php';
                     No real money was charged. This is a simulated/mock payment.
                 </p>
 
+                <div class="error-messages">
+                    <p>Your booking remains in <strong>Pending</strong> status. The vendor will review and accept or reject your booking request.</p>
+                </div>
+
                 <p>
                     <a href="<?= BASE_URL . 'user/bookings.php' ?>" class="btn-primary">Back to My Bookings</a>
                 </p>

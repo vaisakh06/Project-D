@@ -6,6 +6,7 @@
  * It does not include login checking or database logic.
  */
 require_once __DIR__ . '/../config/constants.php';
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/functions.php';
 ?>
 <nav>
@@ -54,11 +55,22 @@ require_once __DIR__ . '/functions.php';
                     <a href="<?= BASE_URL . 'vendor/logout.php' ?>">Logout</a>
                 </li>
             <?php elseif (isAdminLoggedIn()): ?>
+                <?php $unreadCount = getUnreadContactMessageCount($connection); ?>
                 <li>
                     <?= htmlspecialchars($_SESSION['admin_name'], ENT_QUOTES, 'UTF-8') ?>
                 </li>
                 <li>
                     <a href="<?= BASE_URL . 'admin/dashboard.php' ?>">Dashboard</a>
+                </li>
+                <li>
+                    <a href="<?= BASE_URL . 'admin/manage_contacts.php' ?>">
+                        Messages
+                        <?php if ($unreadCount > 0): ?>
+                            <span class="status-badge status-unread" style="font-size: 0.65rem; padding: 2px 6px; vertical-align: super;">
+                                <?= (int) $unreadCount ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
                 </li>
                 <li>
                     <a href="<?= BASE_URL . 'admin/logout.php' ?>">Logout</a>

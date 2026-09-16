@@ -205,6 +205,33 @@ This table is needed because users must be able to book tracks, vendors must man
 - `status` helps vendors accept or reject booking requests.
 - Admin can monitor all booking records.
 
+## 4.7 contact_messages
+
+The `contact_messages` table stores messages submitted through the contact form, along with any admin replies.
+
+### Columns
+
+| Column | Data Type | Purpose | Required | Unique | Key |
+|---|---|---|---|---|---|
+| `message_id` | INT | Unique ID for each message | Yes | Yes | Primary Key |
+| `name` | VARCHAR(100) | Stores the sender's name | Yes | No | - |
+| `email` | VARCHAR(100) | Stores the sender's email | Yes | No | - |
+| `subject` | VARCHAR(150) | Stores the message subject | Yes | No | - |
+| `message` | TEXT | Stores the original message body | Yes | No | - |
+| `admin_reply` | TEXT NULL | Stores the admin's reply text | No | No | - |
+| `replied_at` | DATETIME NULL | Stores when the admin replied | No | No | - |
+| `status` | ENUM('Unread', 'Read', 'Replied') | Shows the current message status | Yes | No | - |
+| `created_at` | DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP | Stores when the message was created | Yes | No | - |
+| `updated_at` | DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Stores when the record was last updated | Yes | No | - |
+
+### Design Notes
+
+- All message content is escaped with `htmlspecialchars()` before display.
+- The `admin_reply` column is NULL until an admin submits a reply.
+- The `replied_at` timestamp is set when the admin saves a reply.
+- Status transitions: Unread → Read, Read → Replied.
+- The `updated_at` field tracks when the status was last changed.
+
 ## 5. Primary Keys
 
 Each table has one primary key:
@@ -217,6 +244,7 @@ Each table has one primary key:
 | `race_tracks` | `track_id` |
 | `track_images` | `image_id` |
 | `bookings` | `booking_id` |
+| `contact_messages` | `message_id` |
 
 Primary keys uniquely identify each record in a table.
 

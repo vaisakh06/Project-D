@@ -249,7 +249,7 @@ This module will use the `users` table.
 
 ### Files That Will Be Created
 
-Expected files include `user/register.php`, `user/login.php`, `user/logout.php`, and related include files for session checking.
+Expected files include `user/register.php`, `user/login.php`, `user/logout.php`, `user/profile.php`, and shared include files for session checking.
 
 ### Learning Notes
 
@@ -279,7 +279,7 @@ This module will use the `users` table.
 
 ### Files That Will Be Created
 
-Expected files include `user/profile.php` and possibly `user/update_profile.php`.
+Expected files include `user/profile.php` and `user/dashboard.php`.
 
 ### Learning Notes
 
@@ -309,7 +309,7 @@ This module will use the `vendors` table.
 
 ### Files That Will Be Created
 
-Expected files include `vendor/register.php`, `vendor/login.php`, `vendor/logout.php`, and vendor session check files.
+Expected files include `vendor/login.php`, `vendor/register.php`, `vendor/logout.php`, `vendor/dashboard.php`, `vendor/profile.php`, and vendor session check files.
 
 ### Learning Notes
 
@@ -339,7 +339,7 @@ This module will use the `vendors`, `race_tracks`, and `track_images` tables.
 
 ### Files That Will Be Created
 
-Expected files include `vendor/dashboard.php`, `vendor/add_track.php`, `vendor/edit_track.php`, `vendor/delete_track.php`, and `vendor/manage_tracks.php`.
+Expected files include `vendor/dashboard.php`, `vendor/add_track.php`, `vendor/tracks.php`, `vendor/edit_track.php`, `vendor/delete_track.php`, `vendor/track_images.php`, and `vendor/manage_bookings.php`.
 
 ### Learning Notes
 
@@ -369,7 +369,7 @@ This module will use the `race_tracks`, `track_images`, and `vendors` tables.
 
 ### Files That Will Be Created
 
-Expected files include `user/browse_tracks.php` or `tracks.php`, depending on the final navigation plan.
+Expected files include `tracks.php` or `user/track_details.php`.
 
 ### Learning Notes
 
@@ -399,7 +399,7 @@ This module will use the `race_tracks`, `track_images`, and `vendors` tables.
 
 ### Files That Will Be Created
 
-Expected files include `user/track_details.php`.
+Expected files include `track.php`.
 
 ### Learning Notes
 
@@ -429,7 +429,7 @@ This module will use the `users`, `race_tracks`, `vendors`, and `bookings` table
 
 ### Files That Will Be Created
 
-Expected files include `user/book_track.php`, `user/booking_history.php`, `vendor/manage_bookings.php`, and `vendor/update_booking_status.php`.
+Expected files include `track.php` for booking creation, `user/bookings.php` for booking history, `vendor/manage_bookings.php` for vendor booking management, and `admin/manage_bookings.php` for admin monitoring.
 
 ### Learning Notes
 
@@ -447,7 +447,7 @@ Admin may provide login credentials, approval decisions, blocking decisions, and
 
 ### Processing
 
-The system will verify admin login and allow admin to view and manage records. Admin can approve vendors, approve or reject race tracks, block users or vendors, and monitor bookings.
+The system will verify admin login and allow admin to view and manage records. Admin can approve vendors, approve or reject race tracks, block users or vendors, monitor bookings, and manage contact messages from users.
 
 ### Outputs
 
@@ -455,15 +455,45 @@ Updated statuses will be stored in the database. Admin will see dashboards and m
 
 ### Database Tables Used
 
-This module will use the `admins`, `users`, `vendors`, `race_tracks`, and `bookings` tables.
+This module will use the `admins`, `users`, `vendors`, `race_tracks`, `bookings`, and `contact_messages` tables.
 
 ### Files That Will Be Created
 
-Expected files include `admin/login.php`, `admin/dashboard.php`, `admin/manage_users.php`, `admin/manage_vendors.php`, `admin/manage_tracks.php`, and `admin/manage_bookings.php`.
+Expected files include `admin/login.php`, `admin/dashboard.php`, `admin/manage_vendors.php`, `admin/manage_race_tracks.php`, `admin/manage_bookings.php`, and `admin/manage_contacts.php`.
 
 ### Learning Notes
 
 This module teaches admin authentication, role-based access, record management, and how one role can control multiple parts of the system.
+
+## 14.9 Contact Messages Management
+
+### Introduction
+
+This module allows users to send messages to the site administrators through a contact form, and allows admins to view, read, and manage those messages. It is important because it provides a direct communication channel between users and administrators.
+
+### Inputs
+
+Users provide their name, email, subject, and message through the contact form. Admins view the message list and can mark messages as read or replied, or delete them.
+
+### Processing
+
+The system validates the contact form inputs (name, email format, subject, message length), applies CSRF protection, sanitizes inputs using `sanitizeInput()`, and stores the message in the `contact_messages` table with `Unread` status. Admins can view complete message details, reply to messages (stored in `admin_reply` with `replied_at` timestamp), mark messages as `Read` or `Replied`, or delete them permanently. The PRG pattern prevents duplicate submissions on refresh. All status changes are tracked in the `updated_at` timestamp.
+
+### Outputs
+
+Each submitted message is stored in the database with the sender's name, email, subject, message body, and status. Admins see a management table with message details, reply timestamps, and action buttons. Users receive a genuine success or error message based on the actual database operation result.
+
+### Database Tables Used
+
+This module will use the `contact_messages` table.
+
+### Files That Will Be Created
+
+Expected files include `contact.php` and `admin/manage_contacts.php` with `admin/view_contact.php` for viewing complete message details and submitting admin replies.
+
+### Learning Notes
+
+This module teaches form handling with database persistence, CSRF protection, prepared statements for inserts, admin-side data management, and status tracking through ENUM fields.
 
 ## 15. Development Roadmap
 
@@ -484,7 +514,8 @@ The development roadmap shows the planned order of implementation. It is importa
 13. Implement user booking history.
 14. Implement vendor booking management.
 15. Implement admin management pages.
-16. Test all modules.
-17. Prepare final report, screenshots, and viva notes.
+16. Implement contact messages (user form + admin management).
+17. Test all modules.
+18. Prepare final report, screenshots, and viva notes.
 
 This roadmap keeps the project organized and supports learning. Each module should be planned, implemented, explained, tested, and approved before moving to the next module.
