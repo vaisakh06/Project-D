@@ -289,8 +289,14 @@ require_once 'includes/navbar.php';
                             var cardCvv = document.getElementById('card_cvv');
                             var upiId = document.getElementById('upi_id');
 
+                            var cardFields = document.getElementById('card-fields');
+                            var upiFields = document.getElementById('upi-fields');
+
                             function updateFields(method) {
                                 var isCard = method === 'card';
+
+                                cardFields.classList.toggle('active', isCard);
+                                upiFields.classList.toggle('active', !isCard);
 
                                 cardName.disabled = !isCard;
                                 cardNumber.disabled = !isCard;
