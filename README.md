@@ -20,3 +20,49 @@ The platform provides separate interfaces for users, vendors, and administrators
 - **Database:** MySQL
 - **Database Connectivity:** MySQLi
 - **Local Development:** WAMP Server
+
+- ## 📌 Application Modules
+
+### 1. User Module
+- User registration and login.
+- Profile management with profile image upload.
+- Browse and search racetracks.
+- View racetrack details.
+- Create racetrack bookings.
+- View booking history.
+- Cancel bookings.
+- Complete the mock payment workflow.
+
+### 2. Vendor Module
+- Vendor registration and authentication.
+- Vendor profile management.
+- Add, edit, and manage racetracks.
+- Upload and manage racetrack images.
+- Manage racetrack availability.
+- View and manage customer bookings.
+- Accept or reject booking requests.
+
+### 3. Admin Module
+- Admin dashboard with platform statistics.
+- Manage vendor accounts.
+- Approve, block, and unblock vendors.
+- Review and approve or reject racetrack listings.
+- Monitor booking activities.
+- Manage contact messages.
+- View and manage customer enquiries.
+
+### 4. Booking and Payment Module
+- Racetrack booking creation.
+- Booking status management.
+- User booking history.
+- Transaction-safe booking cancellation.
+- Mock Card and UPI payment workflow.
+- Payment success and failure handling.
+
+### 5. Security and Authentication
+- Session-based authentication.
+- Password hashing.
+- Role-based access control.
+- Prepared statements for database queries.
+- CSRF protection for supported forms and actions.
+
