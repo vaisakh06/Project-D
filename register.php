@@ -153,7 +153,52 @@ if (isPostRequest()) {
         }
     }
 
-    // Register the account only when validation passes and the email is not already in use.
+    // Check for duplicate phone in both account tables so the common login stays unambiguous.
+    if (empty($errors)) {
+        $phoneTaken = false;
+
+        $userPhoneCheckSql = "SELECT user_id FROM users WHERE phone = ? LIMIT 1";
+        $userPhoneCheckStmt = mysqli_prepare($connection, $userPhoneCheckSql);
+
+        if ($userPhoneCheckStmt) {
+            mysqli_stmt_bind_param($userPhoneCheckStmt, "s", $phone);
+            mysqli_stmt_execute($userPhoneCheckStmt);
+            mysqli_stmt_store_result($userPhoneCheckStmt);
+
+            if (mysqli_stmt_num_rows($userPhoneCheckStmt) > 0) {
+                $phoneTaken = true;
+            }
+
+            mysqli_stmt_close($userPhoneCheckStmt);
+        } else {
+            $errors[] = 'Something went wrong. Please try again later.';
+        }
+    }
+
+    if (empty($errors) && !$phoneTaken) {
+        $vendorPhoneCheckSql = "SELECT vendor_id FROM vendors WHERE phone = ? LIMIT 1";
+        $vendorPhoneCheckStmt = mysqli_prepare($connection, $vendorPhoneCheckSql);
+
+        if ($vendorPhoneCheckStmt) {
+            mysqli_stmt_bind_param($vendorPhoneCheckStmt, "s", $phone);
+            mysqli_stmt_execute($vendorPhoneCheckStmt);
+            mysqli_stmt_store_result($vendorPhoneCheckStmt);
+
+            if (mysqli_stmt_num_rows($vendorPhoneCheckStmt) > 0) {
+                $phoneTaken = true;
+            }
+
+            mysqli_stmt_close($vendorPhoneCheckStmt);
+        } else {
+            $errors[] = 'Something went wrong. Please try again later.';
+        }
+    }
+
+    if (empty($errors) && $phoneTaken) {
+        $errors[] = 'This phone number is already registered. Please use another phone number or log in.';
+    }
+
+    // Register the account only when validation passes and the email and phone are not already in use.
     if (empty($errors)) {
         // Create a secure password hash before storing the password in the database.
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
@@ -168,7 +213,20 @@ if (isPostRequest()) {
                 mysqli_stmt_bind_param($insertStatement, "ssss", $fullName, $email, $phone, $hashedPassword);
 
                 // Run the INSERT query and store whether it completed successfully.
-                $registrationSuccessful = mysqli_stmt_execute($insertStatement);
+                try {
+                    $registrationSuccessful = mysqli_stmt_execute($insertStatement);
+                } catch (mysqli_sql_exception $e) {
+                    if ($e->getCode() == 1062) {
+                        if (strpos($e->getMessage(), 'phone') !== false) {
+                            $errors[] = 'This phone number is already registered. Please use another phone number or log in.';
+                        } else {
+                            $errors[] = 'An account with this email address already exists.';
+                        }
+                    } else {
+                        $errors[] = 'Registration failed. Please try again.';
+                    }
+                    $registrationSuccessful = false;
+                }
 
                 // Close the INSERT statement after it has been used.
                 mysqli_stmt_close($insertStatement);
@@ -179,7 +237,9 @@ if (isPostRequest()) {
                 }
 
                 // Do not show internal database errors to users.
-                $errors[] = 'Registration failed. Please try again.';
+                if (empty($errors)) {
+                    $errors[] = 'Registration failed. Please try again.';
+                }
             } else {
                 // Do not show internal database errors to users.
                 $errors[] = 'Registration failed. Please try again.';
@@ -194,7 +254,20 @@ if (isPostRequest()) {
                 mysqli_stmt_bind_param($insertStatement, "ssssss", $businessName, $ownerName, $email, $phone, $hashedPassword, $address);
 
                 // Run the INSERT query and store whether it completed successfully.
-                $registrationSuccessful = mysqli_stmt_execute($insertStatement);
+                try {
+                    $registrationSuccessful = mysqli_stmt_execute($insertStatement);
+                } catch (mysqli_sql_exception $e) {
+                    if ($e->getCode() == 1062) {
+                        if (strpos($e->getMessage(), 'phone') !== false) {
+                            $errors[] = 'This phone number is already registered. Please use another phone number or log in.';
+                        } else {
+                            $errors[] = 'An account with this email address already exists.';
+                        }
+                    } else {
+                        $errors[] = 'Vendor registration failed. Please try again.';
+                    }
+                    $registrationSuccessful = false;
+                }
 
                 // Close the INSERT statement after it has been used.
                 mysqli_stmt_close($insertStatement);
@@ -205,7 +278,9 @@ if (isPostRequest()) {
                 }
 
                 // Do not show internal database errors to users.
-                $errors[] = 'Vendor registration failed. Please try again.';
+                if (empty($errors)) {
+                    $errors[] = 'Vendor registration failed. Please try again.';
+                }
             } else {
                 // Do not show internal database errors to users.
                 $errors[] = 'Vendor registration failed. Please try again.';
